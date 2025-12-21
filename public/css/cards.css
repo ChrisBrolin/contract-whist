@@ -1,0 +1,238 @@
+/* Contract Whist - Card Styles */
+
+/* Card Base */
+.card {
+  width: 60px;
+  height: 84px;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Card in hand - overlap */
+.player-hand .card {
+  margin-left: -20px;
+}
+
+.player-hand .card:first-child {
+  margin-left: 0;
+}
+
+/* Card hover/select states */
+.card:hover:not(.disabled):not(.card-back) {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.card.selected {
+  transform: translateY(-16px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  outline: 3px solid var(--accent-color);
+}
+
+.card:active:not(.disabled) {
+  transform: scale(0.95);
+}
+
+/* Disabled/invalid cards */
+.card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(50%);
+}
+
+.card.disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Card back */
+.card-back {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: default;
+}
+
+.card-back::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 2px,
+    rgba(255, 255, 255, 0.03) 4px
+  );
+}
+
+/* CSS-only cards (fallback if SVGs not loaded) */
+.card.css-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px;
+  font-family: 'Times New Roman', serif;
+}
+
+.card.css-card .rank {
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.card.css-card .suit {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.card.css-card.hearts,
+.card.css-card.diamonds {
+  color: #e53935;
+}
+
+.card.css-card.spades,
+.card.css-card.clubs {
+  color: #212121;
+}
+
+/* Trick pile cards */
+.trick-area .card {
+  margin-left: -30px;
+  transform: rotate(var(--rotation, 0deg));
+}
+
+.trick-area .card:first-child {
+  margin-left: 0;
+}
+
+/* Larger cards for desktop */
+@media (min-width: 768px) {
+  .card {
+    width: 70px;
+    height: 98px;
+    border-radius: 8px;
+  }
+
+  .player-hand .card {
+    margin-left: -25px;
+  }
+
+  .trick-area .card {
+    margin-left: -35px;
+  }
+}
+
+/* Smaller cards for very small screens */
+@media (max-width: 360px) {
+  .card {
+    width: 50px;
+    height: 70px;
+    border-radius: 4px;
+  }
+
+  .player-hand .card {
+    margin-left: -18px;
+  }
+}
+
+/* Mini cards (for player positions showing card count) */
+.mini-card-stack {
+  position: relative;
+  width: 25px;
+  height: 35px;
+}
+
+.mini-card-stack .mini-card-back {
+  position: absolute;
+  width: 25px;
+  height: 35px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mini-card-stack .mini-card-back:nth-child(2) {
+  top: 2px;
+  left: 2px;
+}
+
+.mini-card-stack .mini-card-back:nth-child(3) {
+  top: 4px;
+  left: 4px;
+}
+
+/* Card count badge */
+.card-count {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: var(--accent-color);
+  color: #000;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Bid display on player */
+.bid-display {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: var(--glass-bg-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tricks won indicator */
+.tricks-won {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.trick-token {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-color);
+  border-radius: 50%;
+}
+
+/* Suit symbols for trump display */
+.suit-symbol {
+  font-size: 1.5rem;
+}
+
+.suit-symbol.hearts::before { content: '♥'; color: #e53935; }
+.suit-symbol.diamonds::before { content: '♦'; color: #e53935; }
+.suit-symbol.spades::before { content: '♠'; color: #212121; }
+.suit-symbol.clubs::before { content: '♣'; color: #212121; }

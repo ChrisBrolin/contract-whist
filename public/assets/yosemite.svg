@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a365d"/>
+      <stop offset="40%" style="stop-color:#2563eb"/>
+      <stop offset="70%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#93c5fd"/>
+    </linearGradient>
+    <linearGradient id="mountain1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#374151"/>
+      <stop offset="100%" style="stop-color:#1f2937"/>
+    </linearGradient>
+    <linearGradient id="mountain2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4b5563"/>
+      <stop offset="100%" style="stop-color:#374151"/>
+    </linearGradient>
+    <linearGradient id="forest" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#065f46"/>
+      <stop offset="100%" style="stop-color:#064e3b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+
+  <!-- Far mountains -->
+  <path d="M0 600 L300 350 L500 450 L700 300 L900 400 L1100 280 L1300 380 L1500 320 L1700 400 L1920 350 L1920 700 L0 700 Z" fill="url(#mountain1)" opacity="0.6"/>
+
+  <!-- Mid mountains (El Capitan style) -->
+  <path d="M0 550 L200 400 L350 500 L500 350 L650 450 L800 320 L950 420 L1100 350 L1250 430 L1400 380 L1550 450 L1700 400 L1850 480 L1920 420 L1920 750 L0 750 Z" fill="url(#mountain2)" opacity="0.8"/>
+
+  <!-- Snow caps -->
+  <path d="M480 350 L500 350 L520 380 L480 380 Z" fill="white" opacity="0.8"/>
+  <path d="M680 300 L700 300 L730 340 L680 340 Z" fill="white" opacity="0.8"/>
+  <path d="M1080 280 L1100 280 L1130 320 L1080 320 Z" fill="white" opacity="0.8"/>
+
+  <!-- Forest layer -->
+  <path d="M0 680 Q200 650 400 680 Q600 660 800 680 Q1000 650 1200 680 Q1400 660 1600 680 Q1800 660 1920 680 L1920 1080 L0 1080 Z" fill="url(#forest)"/>
+
+  <!-- Pine trees silhouette -->
+  <g fill="#064e3b" opacity="0.9">
+    <path d="M50 720 L70 680 L90 720 Z"/>
+    <path d="M100 730 L130 670 L160 730 Z"/>
+    <path d="M180 720 L200 680 L220 720 Z"/>
+    <path d="M250 725 L280 660 L310 725 Z"/>
+    <path d="M350 720 L370 680 L390 720 Z"/>
+    <path d="M420 730 L450 665 L480 730 Z"/>
+    <path d="M1450 720 L1470 680 L1490 720 Z"/>
+    <path d="M1520 730 L1550 670 L1580 730 Z"/>
+    <path d="M1620 720 L1640 680 L1660 720 Z"/>
+    <path d="M1700 725 L1730 660 L1760 725 Z"/>
+    <path d="M1800 720 L1820 680 L1840 720 Z"/>
+    <path d="M1870 730 L1900 665 L1920 730 Z"/>
+  </g>
+
+  <!-- Atmospheric haze -->
+  <rect width="1920" height="1080" fill="url(#sky)" opacity="0.1"/>
+</svg>

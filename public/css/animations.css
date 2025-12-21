@@ -1,0 +1,293 @@
+/* Contract Whist - Animations */
+
+/* Card dealing animation */
+@keyframes deal-card {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.card.dealing {
+  animation: deal-card 0.3s ease-out forwards;
+}
+
+/* Staggered deal animation */
+.player-hand .card:nth-child(1) { animation-delay: 0ms; }
+.player-hand .card:nth-child(2) { animation-delay: 50ms; }
+.player-hand .card:nth-child(3) { animation-delay: 100ms; }
+.player-hand .card:nth-child(4) { animation-delay: 150ms; }
+.player-hand .card:nth-child(5) { animation-delay: 200ms; }
+.player-hand .card:nth-child(6) { animation-delay: 250ms; }
+.player-hand .card:nth-child(7) { animation-delay: 300ms; }
+
+/* Card play animation - moves to trick area */
+@keyframes play-card {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-100px) scale(1.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card.playing {
+  animation: play-card 0.3s ease-out forwards;
+}
+
+/* Card appears in trick */
+@keyframes appear-in-trick {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(var(--rotation, 0deg));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(var(--rotation, 0deg));
+  }
+}
+
+.trick-area .card.appearing {
+  animation: appear-in-trick 0.25s ease-out forwards;
+}
+
+/* Trick won - cards slide to winner */
+@keyframes trick-won {
+  0% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(var(--win-x, 0)) translateY(var(--win-y, -100px)) scale(0.5);
+  }
+}
+
+.trick-area .card.won {
+  animation: trick-won 0.4s ease-in forwards;
+}
+
+/* Bid submitted pulse */
+@keyframes bid-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.bid-display.just-bid {
+  animation: bid-pulse 0.3s ease;
+}
+
+/* Player turn glow */
+@keyframes turn-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.8), 0 0 25px rgba(74, 222, 128, 0.4);
+  }
+}
+
+.player-position.current-turn .player-name {
+  animation: turn-glow 1.5s ease-in-out infinite;
+  background: rgba(74, 222, 128, 0.2);
+}
+
+/* Screen transitions */
+@keyframes screen-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.screen.active {
+  animation: screen-fade-in 0.25s ease-out;
+}
+
+/* Round summary appear */
+@keyframes summary-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.summary-panel, .end-panel {
+  animation: summary-appear 0.3s ease-out;
+}
+
+/* Score update highlight */
+@keyframes score-update {
+  0% {
+    background-color: rgba(74, 222, 128, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.scores-table tr.score-updated {
+  animation: score-update 1s ease-out;
+}
+
+/* Winner celebration */
+@keyframes winner-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.winner-display {
+  animation: winner-bounce 0.5s ease-in-out 3;
+}
+
+/* Toast slide in/out */
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.toast {
+  animation: toast-in 0.3s ease-out;
+}
+
+.toast.removing {
+  animation: toast-out 0.3s ease-in forwards;
+}
+
+/* Button press feedback */
+@keyframes button-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.btn:active {
+  animation: button-press 0.1s ease;
+}
+
+/* Loading spinner enhanced */
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spinner-rotate 1s linear infinite;
+}
+
+/* Card flip animation (for trump reveal) */
+@keyframes card-flip {
+  0% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.trump-card-reveal {
+  animation: card-flip 0.5s ease-out;
+  transform-style: preserve-3d;
+}
+
+/* Connection status pulse */
+@keyframes connection-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.player-position.disconnected .player-name {
+  animation: connection-pulse 2s ease-in-out infinite;
+  opacity: 0.5;
+}
+
+/* Invalid move shake */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.card.invalid-move {
+  animation: shake 0.3s ease;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card.dealing {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .player-position.current-turn .player-name {
+    animation: none;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+  }
+}

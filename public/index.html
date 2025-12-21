@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Contract Whist</title>
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!-- Supabase JS from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/cards.css">
+  <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Home Screen -->
+    <div id="screen-home" class="screen active">
+      <div class="glass-panel home-panel">
+        <h1 class="game-title">Contract Whist</h1>
+        <div class="form-group">
+          <label for="player-name">Your Name</label>
+          <input type="text" id="player-name" maxlength="50" placeholder="Enter your name" autocomplete="off">
+        </div>
+        <div class="button-group">
+          <button id="btn-create" class="btn btn-primary">Create Game</button>
+          <button id="btn-join-screen" class="btn btn-secondary">Join Game</button>
+        </div>
+        <div id="rejoin-section" class="rejoin-section hidden">
+          <p>You have an active game!</p>
+          <button id="btn-rejoin" class="btn btn-accent">Rejoin Game</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Join Screen -->
+    <div id="screen-join" class="screen">
+      <div class="glass-panel join-panel">
+        <button class="btn-back" id="btn-back-home">&larr; Back</button>
+        <h2>Join Game</h2>
+        <div class="form-group">
+          <label for="room-code">Room Code</label>
+          <input type="text" id="room-code" maxlength="6" placeholder="XXXXXX" autocomplete="off" style="text-transform: uppercase;">
+        </div>
+        <button id="btn-join" class="btn btn-primary">Join</button>
+      </div>
+    </div>
+
+    <!-- Lobby Screen -->
+    <div id="screen-lobby" class="screen">
+      <div class="glass-panel lobby-panel">
+        <div class="room-code-display">
+          <span class="label">Room Code</span>
+          <span id="lobby-room-code" class="code">------</span>
+          <button id="btn-copy-code" class="btn-icon" title="Copy code">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="players-list">
+          <h3>Players</h3>
+          <ul id="lobby-players"></ul>
+        </div>
+
+        <div class="lobby-actions">
+          <button id="btn-start" class="btn btn-primary hidden">Start Game</button>
+          <button id="btn-leave" class="btn btn-secondary">Leave</button>
+        </div>
+
+        <p class="waiting-text" id="lobby-status">Waiting for players...</p>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="screen-game" class="screen">
+      <!-- Game info bar -->
+      <div class="game-info-bar glass-panel">
+        <div class="info-item">
+          <span class="label">Round</span>
+          <span id="game-round">7</span>
+        </div>
+        <div class="info-item trump-display">
+          <span class="label">Trump</span>
+          <div id="trump-card" class="mini-card"></div>
+        </div>
+        <div class="info-item">
+          <span class="label">Trick</span>
+          <span id="game-trick">1/7</span>
+        </div>
+      </div>
+
+      <!-- Players around the table -->
+      <div id="players-area" class="players-area">
+        <!-- Player positions will be added dynamically -->
+      </div>
+
+      <!-- Current trick area -->
+      <div id="trick-area" class="trick-area">
+        <!-- Cards played in current trick -->
+      </div>
+
+      <!-- Player's hand -->
+      <div id="hand-area" class="hand-area glass-panel">
+        <div id="player-hand" class="player-hand">
+          <!-- Player's cards -->
+        </div>
+      </div>
+
+      <!-- Bidding UI (shown during bidding phase) -->
+      <div id="bidding-ui" class="bidding-ui glass-panel hidden">
+        <h3>Make Your Bid</h3>
+        <div id="bid-options" class="bid-options">
+          <!-- Bid buttons 0-7 -->
+        </div>
+      </div>
+
+      <!-- Action feedback -->
+      <div id="action-feedback" class="action-feedback hidden"></div>
+    </div>
+
+    <!-- Round Summary Screen -->
+    <div id="screen-round-summary" class="screen">
+      <div class="glass-panel summary-panel">
+        <h2>Round Complete</h2>
+        <table id="round-scores" class="scores-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Bid</th>
+              <th>Won</th>
+              <th>Points</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button id="btn-next-round" class="btn btn-primary">Next Round</button>
+      </div>
+    </div>
+
+    <!-- Game End Screen -->
+    <div id="screen-game-end" class="screen">
+      <div class="glass-panel end-panel">
+        <h2>Game Over</h2>
+        <div id="winner-display" class="winner-display">
+          <span class="trophy">🏆</span>
+          <span id="winner-name">Winner</span>
+        </div>
+        <table id="final-scores" class="scores-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="button-group">
+          <button id="btn-play-again" class="btn btn-primary">Play Again</button>
+          <button id="btn-new-game" class="btn btn-secondary">New Game</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <!-- App scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/state.js"></script>
+  <script src="/js/cards.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/realtime.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
