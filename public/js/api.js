@@ -18,108 +18,81 @@ const API = {
   /**
    * Make API request with session ID header
    */
-  async request(endpoint, options = {}) {
+  async request(action, data = {}) {
     const sessionId = this.getSessionId();
 
-    const config = {
-      ...options,
+    const response = await fetch('/api/games', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Session-ID': sessionId,
-        ...options.headers
-      }
-    };
+        'X-Session-ID': sessionId
+      },
+      body: JSON.stringify({ action, ...data })
+    });
 
-    if (options.body && typeof options.body === 'object') {
-      config.body = JSON.stringify(options.body);
-    }
-
-    const response = await fetch(`/api${endpoint}`, config);
-    const data = await response.json();
+    const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Request failed');
+      throw new Error(result.error || 'Request failed');
     }
 
-    return data;
+    return result;
   },
 
   /**
    * Create a new game
    */
   async createGame(playerName) {
-    return this.request('/games/create', {
-      method: 'POST',
-      body: { playerName, sessionId: this.getSessionId() }
-    });
+    return this.request('create', { playerName });
   },
 
   /**
    * Join an existing game
    */
   async joinGame(roomCode, playerName) {
-    return this.request('/games/join', {
-      method: 'POST',
-      body: { roomCode, playerName, sessionId: this.getSessionId() }
-    });
+    return this.request('join', { roomCode, playerName });
   },
 
   /**
    * Get game state
    */
   async getGameState(roomCode) {
-    return this.request(`/games/${roomCode}`, {
-      method: 'GET'
-    });
+    return this.request('get', { roomCode });
   },
 
   /**
    * Start the game
    */
   async startGame(roomCode) {
-    return this.request('/games/start', {
-      method: 'POST',
-      body: { roomCode }
-    });
+    return this.request('start', { roomCode });
   },
 
   /**
    * Leave the game
    */
   async leaveGame(roomCode) {
-    return this.request('/games/leave', {
-      method: 'POST',
-      body: { roomCode }
-    });
+    return this.request('leave', { roomCode });
   },
 
   /**
    * Submit a bid
    */
   async submitBid(roomCode, bid) {
-    return this.request('/actions/bid', {
-      method: 'POST',
-      body: { roomCode, bid }
-    });
+    return this.request('bid', { roomCode, bid });
   },
 
   /**
    * Play a card
    */
   async playCard(roomCode, card) {
-    return this.request('/actions/play', {
-      method: 'POST',
-      body: { roomCode, card }
-    });
+    return this.request('play', { roomCode, card });
   },
 
   /**
    * Check for active game
    */
   async checkActiveGame() {
-    return this.request('/session/active-game', {
-      method: 'GET'
-    });
+    return this.request('active', {});
   }
 };
 
