@@ -76,7 +76,6 @@ const Realtime = {
    * Handle game table change
    */
   handleGameChange(payload) {
-    console.log('Game change:', payload);
     this.debouncedRefresh();
   },
 
@@ -84,8 +83,6 @@ const Realtime = {
    * Handle player table change
    */
   handlePlayerChange(payload) {
-    console.log('Player change:', payload);
-
     // Check if it's for our game
     if (payload.new?.game_id === GameState.gameId ||
         payload.old?.game_id === GameState.gameId) {

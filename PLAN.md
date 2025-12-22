@@ -1,5 +1,8 @@
 # Contract Whist - Complete Implementation Plan
 
+> **Note:** For quick AI development reference, see [CLAUDE.md](./CLAUDE.md).
+> This file contains the original detailed design specification.
+
 ## Overview
 A real-time multiplayer Contract Whist card game, mobile-first, using Supabase for persistence and real-time communication.
 
