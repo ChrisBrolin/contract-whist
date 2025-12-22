@@ -17,9 +17,18 @@ CREATE TABLE IF NOT EXISTS games (
   current_trick JSONB DEFAULT '[]',
   trick_number INTEGER DEFAULT 0,
   lead_player_index INTEGER,
+  round_scores JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: Add round_scores column if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'round_scores') THEN
+    ALTER TABLE games ADD COLUMN round_scores JSONB;
+  END IF;
+END $$;
 
 -- Players table
 CREATE TABLE IF NOT EXISTS players (

@@ -61,10 +61,10 @@ const API = {
   },
 
   /**
-   * Start the game
+   * Start the game with optional starting round count
    */
-  async startGame(roomCode) {
-    return this.request('start', { roomCode });
+  async startGame(roomCode, startingRound = 7) {
+    return this.request('start', { roomCode, startingRound });
   },
 
   /**
@@ -72,6 +72,13 @@ const API = {
    */
   async leaveGame(roomCode) {
     return this.request('leave', { roomCode });
+  },
+
+  /**
+   * Advance to next round (after viewing round summary)
+   */
+  async nextRound(roomCode) {
+    return this.request('next-round', { roomCode });
   },
 
   /**

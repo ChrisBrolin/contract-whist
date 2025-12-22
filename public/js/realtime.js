@@ -114,6 +114,7 @@ const Realtime = {
       // Update UI based on current phase
       const phase = state.game.current_phase;
       const status = state.game.status;
+      const roundScores = state.game.round_scores;
 
       if (status === 'lobby') {
         UI.updateLobby();
@@ -122,8 +123,10 @@ const Realtime = {
           UI.showScreen('game');
           UI.updateGame();
         } else if (phase === 'round_end') {
-          // This should transition automatically on server
-          UI.updateGame();
+          // Show round summary with scores from game state
+          if (UI.currentScreen !== 'roundSummary') {
+            UI.showRoundSummary(roundScores);
+          }
         } else if (phase === 'game_end') {
           UI.showGameEnd();
         }

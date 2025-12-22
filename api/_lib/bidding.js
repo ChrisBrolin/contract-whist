@@ -2,7 +2,7 @@
  * Bidding logic for Contract Whist
  *
  * Rule: The last bidder cannot bid a number such that
- * (sum of all bids) % current_round === 0
+ * (sum of all bids) === current_round (total bids cannot equal tricks available)
  */
 
 /**
@@ -16,8 +16,9 @@ function getInvalidBidsForLastBidder(bidsSoFar, currentRound) {
   const invalidBids = [];
 
   // Check all possible bids 0 to currentRound
+  // The invalid bid is the one that makes total === currentRound
   for (let bid = 0; bid <= currentRound; bid++) {
-    if ((sumSoFar + bid) % currentRound === 0) {
+    if (sumSoFar + bid === currentRound) {
       invalidBids.push(bid);
     }
   }

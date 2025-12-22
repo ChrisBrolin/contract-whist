@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step needed'",
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "test": "node tests/game-logic.test.js && node tests/comprehensive.test.js",
+    "test:basic": "node tests/game-logic.test.js",
+    "test:comprehensive": "node tests/comprehensive.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"

@@ -81,6 +81,8 @@ const UI = {
     const playersList = document.getElementById('lobby-players');
     const startBtn = document.getElementById('btn-start');
     const statusEl = document.getElementById('lobby-status');
+    const roundConfig = document.getElementById('round-config');
+    const startingRoundSelect = document.getElementById('starting-round');
 
     roomCodeEl.textContent = GameState.roomCode || '------';
 
@@ -94,11 +96,26 @@ const UI = {
       playersList.appendChild(li);
     });
 
-    // Show/hide start button
+    // Show/hide start button and round config for creator
     if (GameState.isCreator && GameState.canStart) {
       startBtn.classList.remove('hidden');
+      roundConfig.classList.remove('hidden');
+
+      // Limit starting round based on player count
+      const maxCardsPerPlayer = Math.floor(52 / GameState.players.length);
+      const maxStartingRound = Math.min(7, maxCardsPerPlayer);
+
+      // Update dropdown options
+      Array.from(startingRoundSelect.options).forEach(option => {
+        const val = parseInt(option.value);
+        option.disabled = val > maxStartingRound;
+        if (val > maxStartingRound && startingRoundSelect.value === option.value) {
+          startingRoundSelect.value = maxStartingRound.toString();
+        }
+      });
     } else {
       startBtn.classList.add('hidden');
+      roundConfig.classList.add('hidden');
     }
 
     // Status text
@@ -309,8 +326,26 @@ const UI = {
 
     try {
       this.showLoading(true);
-      await API.playCard(GameState.roomCode, card);
-      // State will be updated via realtime subscription
+      const result = await API.playCard(GameState.roomCode, card);
+
+      // Show trick winner feedback
+      if (result.trickComplete && result.trickWinnerName) {
+        this.showFeedback(`${result.trickWinnerName} wins the trick!`);
+      }
+
+      // If round is complete, show round summary immediately for the player who played last card
+      if (result.roundComplete && result.roundScores) {
+        // Small delay to let the last card animation show
+        setTimeout(() => {
+          this.showRoundSummary(result.roundScores);
+        }, 500);
+      } else if (result.gameComplete) {
+        // Game ended
+        setTimeout(() => {
+          this.showGameEnd();
+        }, 500);
+      }
+      // Other players will get the update via realtime subscription
     } catch (error) {
       this.showToast(error.message, 'error');
     } finally {

@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   }
 
   const sessionId = req.headers['x-session-id'];
-  const { action, roomCode, playerName, bid, card } = { ...req.query, ...req.body };
+  const { action, roomCode, playerName, bid, card, startingRound } = { ...req.query, ...req.body };
 
   try {
     switch (action) {
@@ -23,13 +23,15 @@ module.exports = async function handler(req, res) {
       case 'get':
         return await handleGet(req, res, roomCode, sessionId);
       case 'start':
-        return await handleStart(req, res, roomCode, sessionId);
+        return await handleStart(req, res, roomCode, sessionId, startingRound);
       case 'leave':
         return await handleLeave(req, res, roomCode, sessionId);
       case 'bid':
         return await handleBid(req, res, roomCode, bid, sessionId);
       case 'play':
         return await handlePlay(req, res, roomCode, card, sessionId);
+      case 'next-round':
+        return await handleNextRound(req, res, roomCode, sessionId);
       case 'active':
         return await handleActiveGame(req, res, sessionId);
       default:
@@ -190,7 +192,7 @@ async function handleGet(req, res, roomCode, sessionId) {
   return res.status(200).json(gameState);
 }
 
-async function handleStart(req, res, roomCode, sessionId) {
+async function handleStart(req, res, roomCode, sessionId, startingRound) {
   if (!roomCode || !sessionId) {
     return res.status(400).json({ error: 'Room code and session ID required' });
   }
@@ -223,7 +225,16 @@ async function handleStart(req, res, roomCode, sessionId) {
     return res.status(400).json({ error: 'Need 2-7 players' });
   }
 
-  const { game: updatedGame, players: updatedPlayers } = startRound({ ...game, status: 'playing' }, players);
+  // Validate starting round (default to 7, max based on player count)
+  const maxCardsPerPlayer = Math.floor(52 / players.length);
+  const maxStartingRound = Math.min(7, maxCardsPerPlayer);
+  const validStartingRound = Math.min(Math.max(1, parseInt(startingRound) || 7), maxStartingRound);
+
+  const { game: updatedGame, players: updatedPlayers } = startRound({
+    ...game,
+    status: 'playing',
+    current_round: validStartingRound
+  }, players);
 
   await supabase.from('games').update({
     status: updatedGame.status,
@@ -321,7 +332,7 @@ async function handleBid(req, res, roomCode, bid, sessionId) {
 }
 
 async function handlePlay(req, res, roomCode, card, sessionId) {
-  const { processCardPlay, startRound } = require('./_lib/game-logic');
+  const { processCardPlay } = require('./_lib/game-logic');
 
   if (!roomCode || !card || !sessionId) {
     return res.status(400).json({ error: 'Room code, card, and session ID required' });
@@ -337,30 +348,29 @@ async function handlePlay(req, res, roomCode, card, sessionId) {
   const result = processCardPlay(game, players, playingPlayer.id, card);
   if (result.error) return res.status(400).json({ error: result.error });
 
-  let finalGame = result.game;
-  let finalPlayers = result.players;
+  // Store round scores in game state if round ended (don't auto-advance)
+  const gameUpdate = {
+    status: result.game.status,
+    current_phase: result.game.current_phase,
+    current_round: result.game.current_round,
+    dealer_index: result.game.dealer_index,
+    current_player_index: result.game.current_player_index,
+    trump_suit: result.game.trump_suit,
+    trump_card: result.game.trump_card,
+    deck: result.game.deck,
+    current_trick: result.game.current_trick,
+    trick_number: result.game.trick_number,
+    lead_player_index: result.game.lead_player_index
+  };
 
-  if (result.game.current_phase === 'round_end') {
-    const nextRound = startRound(result.game, result.players);
-    finalGame = nextRound.game;
-    finalPlayers = nextRound.players;
+  // If round ended, store the round scores for display
+  if (result.roundScores) {
+    gameUpdate.round_scores = result.roundScores;
   }
 
-  await supabase.from('games').update({
-    status: finalGame.status,
-    current_phase: finalGame.current_phase,
-    current_round: finalGame.current_round,
-    dealer_index: finalGame.dealer_index,
-    current_player_index: finalGame.current_player_index,
-    trump_suit: finalGame.trump_suit,
-    trump_card: finalGame.trump_card,
-    deck: finalGame.deck,
-    current_trick: finalGame.current_trick,
-    trick_number: finalGame.trick_number,
-    lead_player_index: finalGame.lead_player_index
-  }).eq('id', game.id);
+  await supabase.from('games').update(gameUpdate).eq('id', game.id);
 
-  for (const player of finalPlayers) {
+  for (const player of result.players) {
     await supabase.from('players').update({
       hand: player.hand,
       current_bid: player.current_bid,
@@ -369,14 +379,64 @@ async function handlePlay(req, res, roomCode, card, sessionId) {
     }).eq('id', player.id);
   }
 
+  // Find trick winner name if trick completed
+  let trickWinnerName = null;
+  if (result.trickWinner) {
+    const winner = players.find(p => p.id === result.trickWinner);
+    trickWinnerName = winner?.name;
+  }
+
   return res.status(200).json({
     success: true,
     trickComplete: !!result.trickWinner,
     trickWinner: result.trickWinner,
+    trickWinnerName: trickWinnerName,
     roundComplete: !!result.roundScores,
     roundScores: result.roundScores,
-    gameComplete: finalGame.current_phase === 'game_end'
+    gameComplete: result.game.current_phase === 'game_end'
   });
+}
+
+async function handleNextRound(req, res, roomCode, sessionId) {
+  const { startRound } = require('./_lib/game-logic');
+
+  if (!roomCode || !sessionId) {
+    return res.status(400).json({ error: 'Room code and session ID required' });
+  }
+
+  const { data: game } = await supabase.from('games').select('*').eq('room_code', roomCode.toUpperCase()).single();
+  if (!game) return res.status(404).json({ error: 'Game not found' });
+
+  if (game.current_phase !== 'round_end') {
+    return res.status(400).json({ error: 'Not at end of round' });
+  }
+
+  const { data: players } = await supabase.from('players').select('*').eq('game_id', game.id).order('position', { ascending: true });
+
+  // Start the next round
+  const { game: updatedGame, players: updatedPlayers } = startRound(game, players);
+
+  await supabase.from('games').update({
+    current_phase: updatedGame.current_phase,
+    current_player_index: updatedGame.current_player_index,
+    trump_suit: updatedGame.trump_suit,
+    trump_card: updatedGame.trump_card,
+    deck: updatedGame.deck,
+    current_trick: updatedGame.current_trick,
+    trick_number: updatedGame.trick_number,
+    lead_player_index: updatedGame.lead_player_index,
+    round_scores: null  // Clear round scores
+  }).eq('id', game.id);
+
+  for (const player of updatedPlayers) {
+    await supabase.from('players').update({
+      hand: player.hand,
+      current_bid: player.current_bid,
+      tricks_won_this_round: player.tricks_won_this_round
+    }).eq('id', player.id);
+  }
+
+  return res.status(200).json({ success: true });
 }
 
 async function handleActiveGame(req, res, sessionId) {

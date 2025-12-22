@@ -270,7 +270,8 @@ function getPlayerGameState(game, players, sessionId) {
       trump_card: game.trump_card,
       current_trick: game.current_trick,
       trick_number: game.trick_number,
-      lead_player_index: game.lead_player_index
+      lead_player_index: game.lead_player_index,
+      round_scores: game.round_scores || null
     },
     players: players.map(p => ({
       id: p.id,

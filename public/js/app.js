@@ -53,11 +53,8 @@ const App = {
     document.getElementById('btn-leave').addEventListener('click', () => this.leaveGame());
     document.getElementById('btn-copy-code').addEventListener('click', () => this.copyRoomCode());
 
-    // Round summary
-    document.getElementById('btn-next-round').addEventListener('click', () => {
-      UI.showScreen('game');
-      UI.updateGame();
-    });
+    // Round summary - advance to next round
+    document.getElementById('btn-next-round').addEventListener('click', () => this.nextRound());
 
     // Game end
     document.getElementById('btn-play-again').addEventListener('click', () => this.playAgain());
@@ -222,7 +219,23 @@ const App = {
   async startGame() {
     try {
       UI.showLoading(true);
-      await API.startGame(GameState.roomCode);
+      const startingRound = parseInt(document.getElementById('starting-round').value) || 7;
+      await API.startGame(GameState.roomCode, startingRound);
+      // State will update via realtime
+    } catch (error) {
+      UI.showToast(error.message, 'error');
+    } finally {
+      UI.showLoading(false);
+    }
+  },
+
+  /**
+   * Advance to the next round
+   */
+  async nextRound() {
+    try {
+      UI.showLoading(true);
+      await API.nextRound(GameState.roomCode);
       // State will update via realtime
     } catch (error) {
       UI.showToast(error.message, 'error');
@@ -277,6 +290,7 @@ const App = {
   onGameStateUpdated(state) {
     const phase = state.game?.current_phase;
     const status = state.game?.status;
+    const roundScores = state.game?.round_scores;
 
     console.log('Game state updated:', status, phase);
 
@@ -291,6 +305,11 @@ const App = {
           UI.showScreen('game');
         }
         UI.updateGame();
+      } else if (phase === 'round_end') {
+        // Show round summary with scores from game state
+        if (UI.currentScreen !== 'roundSummary') {
+          UI.showRoundSummary(roundScores);
+        }
       } else if (phase === 'game_end') {
         UI.showGameEnd();
       }

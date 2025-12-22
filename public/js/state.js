@@ -195,6 +195,7 @@ const GameState = {
 
   /**
    * Get invalid bids (for last bidder restriction)
+   * Rule: Total bids cannot equal the number of tricks in the round
    */
   getInvalidBids() {
     if (!this.isLastBidder()) return [];
@@ -205,7 +206,7 @@ const GameState = {
 
     const invalid = [];
     for (let bid = 0; bid <= currentRound; bid++) {
-      if ((sumSoFar + bid) % currentRound === 0) {
+      if (sumSoFar + bid === currentRound) {
         invalid.push(bid);
       }
     }
