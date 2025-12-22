@@ -86,7 +86,17 @@ async function handleCreate(req, res, playerName, sessionId) {
     return res.status(500).json({ error: 'Failed to add player' });
   }
 
-  return res.status(201).json({ roomCode, gameId: game.id, playerId: player.id });
+  // Return full game state to avoid a second API call
+  const gameState = getPlayerGameState(game, [player], sessionId);
+  gameState.isCreator = true;
+  gameState.canStart = false; // Need 2+ players
+
+  return res.status(201).json({
+    roomCode,
+    gameId: game.id,
+    playerId: player.id,
+    state: gameState
+  });
 }
 
 async function handleJoin(req, res, roomCode, playerName, sessionId) {
@@ -120,20 +130,38 @@ async function handleJoin(req, res, roomCode, playerName, sessionId) {
       .from('players')
       .update({ is_connected: true, last_seen: new Date().toISOString() })
       .eq('id', existingPlayer.id);
-    return res.status(200).json({ roomCode: game.room_code, gameId: game.id, playerId: existingPlayer.id, rejoined: true });
+
+    // Fetch all players for state
+    const { data: allPlayers } = await supabase
+      .from('players')
+      .select('*')
+      .eq('game_id', game.id)
+      .order('position', { ascending: true });
+
+    const gameState = getPlayerGameState(game, allPlayers, sessionId);
+    gameState.isCreator = game.creator_session_id === sessionId;
+    gameState.canStart = game.status === 'lobby' && game.creator_session_id === sessionId && allPlayers.length >= 2 && allPlayers.length <= 7;
+
+    return res.status(200).json({
+      roomCode: game.room_code,
+      gameId: game.id,
+      playerId: existingPlayer.id,
+      rejoined: true,
+      state: gameState
+    });
   }
 
   const { data: players } = await supabase
     .from('players')
-    .select('position')
+    .select('*')
     .eq('game_id', game.id)
-    .order('position', { ascending: false });
+    .order('position', { ascending: true });
 
   if (players.length >= 7) {
     return res.status(400).json({ error: 'Game is full' });
   }
 
-  const nextPosition = players.length > 0 ? players[0].position + 1 : 0;
+  const nextPosition = players.length > 0 ? players[players.length - 1].position + 1 : 0;
 
   const { data: player, error: playerError } = await supabase
     .from('players')
@@ -151,7 +179,18 @@ async function handleJoin(req, res, roomCode, playerName, sessionId) {
     return res.status(500).json({ error: 'Failed to join game' });
   }
 
-  return res.status(200).json({ roomCode: game.room_code, gameId: game.id, playerId: player.id });
+  // Return full game state to avoid a second API call
+  const allPlayers = [...players, player];
+  const gameState = getPlayerGameState(game, allPlayers, sessionId);
+  gameState.isCreator = game.creator_session_id === sessionId;
+  gameState.canStart = game.status === 'lobby' && game.creator_session_id === sessionId && allPlayers.length >= 2 && allPlayers.length <= 7;
+
+  return res.status(200).json({
+    roomCode: game.room_code,
+    gameId: game.id,
+    playerId: player.id,
+    state: gameState
+  });
 }
 
 async function handleGet(req, res, roomCode, sessionId) {

@@ -106,9 +106,10 @@ const App = {
 
       GameState.setRoom(result.roomCode, result.gameId, result.playerId);
 
-      // Get initial state
-      const state = await API.getGameState(result.roomCode);
-      GameState.updateFromServer(state);
+      // Use state returned from create (no second API call needed)
+      if (result.state) {
+        GameState.updateFromServer(result.state);
+      }
 
       // Subscribe to updates (non-blocking)
       Realtime.subscribe(result.roomCode);
@@ -147,14 +148,16 @@ const App = {
 
       GameState.setRoom(result.roomCode, result.gameId, result.playerId);
 
-      // Get initial state
-      const state = await API.getGameState(result.roomCode);
-      GameState.updateFromServer(state);
+      // Use state returned from join (no second API call needed)
+      const state = result.state;
+      if (state) {
+        GameState.updateFromServer(state);
+      }
 
       // Subscribe to updates (non-blocking)
       Realtime.subscribe(result.roomCode);
 
-      if (state.game.status === 'lobby') {
+      if (state?.game?.status === 'lobby') {
         UI.showScreen('lobby');
         UI.updateLobby();
       } else {
