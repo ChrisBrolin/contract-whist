@@ -314,8 +314,6 @@ const App = {
     const status = state.game?.status;
     const roundScores = state.game?.round_scores;
 
-    console.log('Game state updated:', status, phase);
-
     if (status === 'lobby') {
       if (UI.currentScreen !== 'lobby') {
         UI.showScreen('lobby');

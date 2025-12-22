@@ -14,7 +14,6 @@ node_modules/
 Thumbs.db
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -26,3 +25,7 @@ npm-debug.log*
 # Build output
 dist/
 build/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
