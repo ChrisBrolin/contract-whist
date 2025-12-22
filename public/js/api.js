@@ -100,6 +100,13 @@ const API = {
    */
   async checkActiveGame() {
     return this.request('active', {});
+  },
+
+  /**
+   * Remove a player from the lobby (host only)
+   */
+  async removePlayer(roomCode, playerId) {
+    return this.request('remove-player', { roomCode, playerId });
   }
 };
 

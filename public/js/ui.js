@@ -86,13 +86,34 @@ const UI = {
 
     roomCodeEl.textContent = GameState.roomCode || '------';
 
-    // Update players list
+    // Update players list with grid layout
     playersList.innerHTML = '';
     GameState.players.forEach((player, index) => {
       const li = document.createElement('li');
-      li.textContent = player.name;
-      if (index === 0) li.classList.add('creator');
       if (!player.is_connected) li.style.opacity = '0.5';
+
+      // Player name
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'player-name-text';
+      nameSpan.textContent = player.name;
+      li.appendChild(nameSpan);
+
+      // Host badge for first player (creator)
+      if (index === 0) {
+        const hostBadge = document.createElement('span');
+        hostBadge.className = 'host-badge';
+        hostBadge.textContent = 'Host';
+        li.appendChild(hostBadge);
+      } else if (GameState.isCreator) {
+        // Remove button for non-host players (only visible to host)
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn-remove';
+        removeBtn.textContent = '✕';
+        removeBtn.title = 'Remove player';
+        removeBtn.addEventListener('click', () => this.removePlayer(player.id));
+        li.appendChild(removeBtn);
+      }
+
       playersList.appendChild(li);
     });
 
@@ -494,6 +515,23 @@ const UI = {
       section.dataset.roomCode = roomCode;
     } else {
       section.classList.add('hidden');
+    }
+  },
+
+  /**
+   * Remove a player from the lobby (host only)
+   */
+  async removePlayer(playerId) {
+    if (!GameState.isCreator) return;
+
+    try {
+      this.showLoading(true);
+      await API.removePlayer(GameState.roomCode, playerId);
+      // State will update via realtime
+    } catch (error) {
+      this.showToast(error.message, 'error');
+    } finally {
+      this.showLoading(false);
     }
   }
 };

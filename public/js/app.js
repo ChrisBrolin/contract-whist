@@ -221,7 +221,17 @@ const App = {
       UI.showLoading(true);
       const startingRound = parseInt(document.getElementById('starting-round').value) || 7;
       await API.startGame(GameState.roomCode, startingRound);
-      // State will update via realtime
+
+      // Explicitly refresh game state after starting
+      // (realtime may have latency or may not be configured)
+      const state = await API.getGameState(GameState.roomCode);
+      GameState.updateFromServer(state);
+
+      // Transition to game screen
+      if (state.game.status === 'playing') {
+        UI.showScreen('game');
+        UI.updateGame();
+      }
     } catch (error) {
       UI.showToast(error.message, 'error');
     } finally {
@@ -236,7 +246,16 @@ const App = {
     try {
       UI.showLoading(true);
       await API.nextRound(GameState.roomCode);
-      // State will update via realtime
+
+      // Explicitly refresh game state after advancing
+      const state = await API.getGameState(GameState.roomCode);
+      GameState.updateFromServer(state);
+
+      // Transition to game screen
+      if (state.game.current_phase === 'bidding' || state.game.current_phase === 'playing') {
+        UI.showScreen('game');
+        UI.updateGame();
+      }
     } catch (error) {
       UI.showToast(error.message, 'error');
     } finally {

@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   }
 
   const sessionId = req.headers['x-session-id'];
-  const { action, roomCode, playerName, bid, card, startingRound } = { ...req.query, ...req.body };
+  const { action, roomCode, playerName, playerId, bid, card, startingRound } = { ...req.query, ...req.body };
 
   try {
     switch (action) {
@@ -32,6 +32,8 @@ module.exports = async function handler(req, res) {
         return await handlePlay(req, res, roomCode, card, sessionId);
       case 'next-round':
         return await handleNextRound(req, res, roomCode, sessionId);
+      case 'remove-player':
+        return await handleRemovePlayer(req, res, roomCode, playerId, sessionId);
       case 'active':
         return await handleActiveGame(req, res, sessionId);
       default:
@@ -435,6 +437,54 @@ async function handleNextRound(req, res, roomCode, sessionId) {
       tricks_won_this_round: player.tricks_won_this_round
     }).eq('id', player.id);
   }
+
+  return res.status(200).json({ success: true });
+}
+
+async function handleRemovePlayer(req, res, roomCode, playerId, sessionId) {
+  if (!roomCode || !playerId || !sessionId) {
+    return res.status(400).json({ error: 'Room code, player ID, and session ID required' });
+  }
+
+  const { data: game } = await supabase
+    .from('games')
+    .select('*')
+    .eq('room_code', roomCode.toUpperCase())
+    .single();
+
+  if (!game) {
+    return res.status(404).json({ error: 'Game not found' });
+  }
+
+  // Only creator can remove players
+  if (game.creator_session_id !== sessionId) {
+    return res.status(403).json({ error: 'Only the host can remove players' });
+  }
+
+  // Can only remove players in lobby
+  if (game.status !== 'lobby') {
+    return res.status(400).json({ error: 'Cannot remove players after game started' });
+  }
+
+  // Find the player to remove
+  const { data: playerToRemove } = await supabase
+    .from('players')
+    .select('*')
+    .eq('id', playerId)
+    .eq('game_id', game.id)
+    .single();
+
+  if (!playerToRemove) {
+    return res.status(404).json({ error: 'Player not found' });
+  }
+
+  // Cannot remove yourself (the host)
+  if (playerToRemove.session_id === sessionId) {
+    return res.status(400).json({ error: 'Cannot remove yourself' });
+  }
+
+  // Delete the player
+  await supabase.from('players').delete().eq('id', playerId);
 
   return res.status(200).json({ success: true });
 }
