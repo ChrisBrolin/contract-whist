@@ -1,5 +1,13 @@
 /**
  * API Client for Contract Whist
+ *
+ * Handles all HTTP communication with the backend.
+ * Uses session ID for player identification.
+ *
+ * Methods:
+ *   Room:   createGame, joinGame, getGameState, leaveGame
+ *   Game:   startGame, submitBid, playCard, nextRound
+ *   Player: removePlayer, checkActiveGame
  */
 
 const API = {

@@ -4,11 +4,11 @@
 @keyframes deal-card {
   0% {
     opacity: 0;
-    transform: scale(0.8) translateY(-50px);
+    transform: translateY(-50px);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
@@ -31,10 +31,10 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-100px) scale(1.1);
+    transform: translateY(-100px);
   }
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -46,11 +46,11 @@
 @keyframes appear-in-trick {
   0% {
     opacity: 0;
-    transform: scale(0.5) rotate(var(--rotation, 0deg));
+    transform: translateY(-20px) rotate(var(--rotation, 0deg));
   }
   100% {
     opacity: 1;
-    transform: scale(1) rotate(var(--rotation, 0deg));
+    transform: translateY(0) rotate(var(--rotation, 0deg));
   }
 }
 
@@ -66,7 +66,7 @@
   }
   100% {
     opacity: 0;
-    transform: translateX(var(--win-x, 0)) translateY(var(--win-y, -100px)) scale(0.5);
+    transform: translateX(var(--win-x, 0)) translateY(var(--win-y, -100px));
   }
 }
 
@@ -74,32 +74,23 @@
   animation: trick-won 0.4s ease-in forwards;
 }
 
-/* Bid submitted pulse */
-@keyframes bid-pulse {
-  0%, 100% {
-    transform: scale(1);
+/* Bid submitted highlight */
+@keyframes bid-highlight {
+  0% {
+    background-color: rgba(74, 222, 128, 0.5);
   }
-  50% {
-    transform: scale(1.1);
+  100% {
+    background-color: var(--glass-bg-solid);
   }
 }
 
 .bid-display.just-bid {
-  animation: bid-pulse 0.3s ease;
+  animation: bid-highlight 0.5s ease;
 }
 
-/* Player turn glow */
-@keyframes turn-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 15px rgba(74, 222, 128, 0.8), 0 0 25px rgba(74, 222, 128, 0.4);
-  }
-}
-
+/* Player turn glow - static glow instead of pulsing */
 .player-position.current-turn .player-name {
-  animation: turn-glow 1.5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.7), 0 0 20px rgba(74, 222, 128, 0.4);
   background: rgba(74, 222, 128, 0.2);
 }
 
@@ -121,11 +112,11 @@
 @keyframes summary-appear {
   0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translateY(20px);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -192,21 +183,9 @@
   animation: toast-out 0.3s ease-in forwards;
 }
 
-/* Button press feedback */
-@keyframes button-press {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
+/* Button press feedback - opacity change instead of scale */
 .btn:active {
-  animation: button-press 0.1s ease;
+  opacity: 0.8;
 }
 
 /* Loading spinner enhanced */
@@ -284,10 +263,5 @@
     animation: none;
     opacity: 1;
     transform: none;
-  }
-
-  .player-position.current-turn .player-name {
-    animation: none;
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
   }
 }

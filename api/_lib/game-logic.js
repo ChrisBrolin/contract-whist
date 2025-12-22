@@ -1,5 +1,16 @@
 /**
- * Main game logic / state machine for Contract Whist
+ * Main Game Logic / State Machine for Contract Whist
+ *
+ * Orchestrates the game flow through phases:
+ *   LOBBY → BIDDING → PLAYING → ROUND_END → (repeat) → GAME_END
+ *
+ * Key Functions:
+ *   - startRound(): Deal cards, set trump, begin bidding
+ *   - processBid(): Handle bid submission, advance bidding
+ *   - processCardPlay(): Handle card play, resolve tricks/rounds
+ *   - getPlayerGameState(): Filter game state for a specific player
+ *
+ * Dependencies: deck.js, bidding.js, tricks.js, scoring.js
  */
 
 const { dealCards, getTrumpCard, sortHand } = require('./deck');

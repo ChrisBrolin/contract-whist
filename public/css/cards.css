@@ -42,10 +42,6 @@
   outline: 3px solid var(--accent-color);
 }
 
-.card:active:not(.disabled) {
-  transform: scale(0.95);
-}
-
 /* Disabled/invalid cards */
 .card.disabled {
   opacity: 0.4;

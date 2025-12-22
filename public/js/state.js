@@ -1,5 +1,18 @@
 /**
  * Client-side State Management
+ *
+ * Central store for all game state on the client.
+ * Updated via API responses and realtime subscriptions.
+ *
+ * Key Properties:
+ *   - roomCode, gameId, playerId: Session identifiers
+ *   - game: Current game state from server
+ *   - players: All players in the game
+ *   - myHand: Current player's cards
+ *   - selectedCard: Currently selected card for play
+ *
+ * Events:
+ *   - 'gameStateUpdated': Fired when state changes
  */
 
 const GameState = {

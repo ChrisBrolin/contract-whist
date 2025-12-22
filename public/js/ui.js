@@ -1,5 +1,17 @@
 /**
- * UI Rendering
+ * UI Rendering Module
+ *
+ * Handles all DOM manipulation and screen transitions.
+ * Depends on: GameState, Cards, API
+ *
+ * SECTIONS:
+ *   1. Core (init, showScreen, showLoading, showToast)
+ *   2. Lobby (updateLobby, removePlayer)
+ *   3. Game Screen (updateGame, renderPlayersArea, renderTrickArea, renderHand)
+ *   4. Card Actions (handleCardClick, playSelectedCard)
+ *   5. Bidding (updateBiddingUI, submitBid)
+ *   6. End Screens (showRoundSummary, showGameEnd)
+ *   7. Utilities (showFeedback, updateRejoinSection, getPlayerPositions)
  */
 
 const UI = {
