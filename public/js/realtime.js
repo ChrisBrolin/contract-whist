@@ -5,11 +5,13 @@
 const Realtime = {
   channel: null,
   pollingInterval: null,
+  refreshDebounceTimer: null,
+  pendingRefresh: false,
 
   /**
-   * Subscribe to game updates
+   * Subscribe to game updates (non-blocking)
    */
-  async subscribe(roomCode) {
+  subscribe(roomCode) {
     const supabase = SupabaseClient.get();
 
     if (!supabase) {
@@ -19,9 +21,9 @@ const Realtime = {
       return;
     }
 
-    // Unsubscribe from previous channel
+    // Unsubscribe from previous channel (fire and forget)
     if (this.channel) {
-      await this.unsubscribe();
+      this.unsubscribe();
     }
 
     // Create channel for this game
@@ -37,12 +39,11 @@ const Realtime = {
         { event: '*', schema: 'public', table: 'players' },
         (payload) => this.handlePlayerChange(payload)
       )
-      .on('presence', { event: 'sync' }, () => this.handlePresenceSync())
-      .subscribe(async (status) => {
+      .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log('Subscribed to game channel');
-          // Track presence
-          await this.channel.track({
+          // Track presence (fire and forget, don't await)
+          this.channel.track({
             sessionId: API.getSessionId(),
             online_at: new Date().toISOString()
           });
@@ -53,13 +54,19 @@ const Realtime = {
   /**
    * Unsubscribe from updates
    */
-  async unsubscribe() {
+  unsubscribe() {
     if (this.channel) {
       const supabase = SupabaseClient.get();
       if (supabase) {
-        await supabase.removeChannel(this.channel);
+        supabase.removeChannel(this.channel);
       }
       this.channel = null;
+    }
+
+    // Clear debounce timer
+    if (this.refreshDebounceTimer) {
+      clearTimeout(this.refreshDebounceTimer);
+      this.refreshDebounceTimer = null;
     }
 
     this.stopPolling();
@@ -68,37 +75,38 @@ const Realtime = {
   /**
    * Handle game table change
    */
-  async handleGameChange(payload) {
+  handleGameChange(payload) {
     console.log('Game change:', payload);
-
-    // Refresh full game state
-    await this.refreshGameState();
+    this.debouncedRefresh();
   },
 
   /**
    * Handle player table change
    */
-  async handlePlayerChange(payload) {
+  handlePlayerChange(payload) {
     console.log('Player change:', payload);
 
     // Check if it's for our game
     if (payload.new?.game_id === GameState.gameId ||
         payload.old?.game_id === GameState.gameId) {
-      await this.refreshGameState();
+      this.debouncedRefresh();
     }
   },
 
   /**
-   * Handle presence sync
+   * Debounced refresh - prevents multiple rapid refreshes
    */
-  handlePresenceSync() {
-    if (!this.channel) return;
+  debouncedRefresh() {
+    // Clear any pending refresh
+    if (this.refreshDebounceTimer) {
+      clearTimeout(this.refreshDebounceTimer);
+    }
 
-    const state = this.channel.presenceState();
-    console.log('Presence sync:', state);
-
-    // Update connected status in UI
-    // (handled by full state refresh)
+    // Schedule refresh after 150ms of no new events
+    this.refreshDebounceTimer = setTimeout(() => {
+      this.refreshDebounceTimer = null;
+      this.refreshGameState();
+    }, 150);
   },
 
   /**
@@ -106,6 +114,10 @@ const Realtime = {
    */
   async refreshGameState() {
     if (!GameState.roomCode) return;
+
+    // Prevent concurrent refreshes
+    if (this.pendingRefresh) return;
+    this.pendingRefresh = true;
 
     try {
       const state = await API.getGameState(GameState.roomCode);
@@ -136,6 +148,8 @@ const Realtime = {
 
     } catch (error) {
       console.error('Error refreshing game state:', error);
+    } finally {
+      this.pendingRefresh = false;
     }
   },
 

@@ -106,12 +106,12 @@ const App = {
 
       GameState.setRoom(result.roomCode, result.gameId, result.playerId);
 
-      // Subscribe to updates
-      await Realtime.subscribe(result.roomCode);
-
       // Get initial state
       const state = await API.getGameState(result.roomCode);
       GameState.updateFromServer(state);
+
+      // Subscribe to updates (non-blocking)
+      Realtime.subscribe(result.roomCode);
 
       UI.showScreen('lobby');
       UI.updateLobby();
@@ -147,12 +147,12 @@ const App = {
 
       GameState.setRoom(result.roomCode, result.gameId, result.playerId);
 
-      // Subscribe to updates
-      await Realtime.subscribe(result.roomCode);
-
       // Get initial state
       const state = await API.getGameState(result.roomCode);
       GameState.updateFromServer(state);
+
+      // Subscribe to updates (non-blocking)
+      Realtime.subscribe(result.roomCode);
 
       if (state.game.status === 'lobby') {
         UI.showScreen('lobby');
@@ -187,12 +187,12 @@ const App = {
     try {
       UI.showLoading(true);
 
-      // Subscribe to updates
-      await Realtime.subscribe(roomCode);
-
       // Get current state
       const state = await API.getGameState(roomCode);
       GameState.updateFromServer(state);
+
+      // Subscribe to updates (non-blocking)
+      Realtime.subscribe(roomCode);
 
       if (state.game.status === 'lobby') {
         UI.showScreen('lobby');
@@ -271,7 +271,7 @@ const App = {
       UI.showLoading(true);
       await API.leaveGame(GameState.roomCode);
 
-      await Realtime.unsubscribe();
+      Realtime.unsubscribe();
       GameState.reset();
       UI.updateRejoinSection(false);
 
@@ -349,8 +349,8 @@ const App = {
   /**
    * Start a new game
    */
-  async newGame() {
-    await Realtime.unsubscribe();
+  newGame() {
+    Realtime.unsubscribe();
     GameState.reset();
     UI.updateRejoinSection(false);
     UI.showScreen('home');
